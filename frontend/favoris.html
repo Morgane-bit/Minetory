@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mes Favoris</title>
+  <style>
+    /* === Thème global === */
+    :root {
+      --bg: #f4f4f9;
+      --text: #333;
+      --header: #2c3e50;
+      --card: #fff;
+      --footer: #2c3e50;
+    }
+
+    body.dark {
+      --bg: #1e1e1e;
+      --text: #eee;
+      --header: #111;
+      --card: #2a2a2a;
+      --footer: #111;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 0;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    /* === Header === */
+    header {
+      background: var(--header);
+      color: white;
+      padding: 1rem;
+      text-align: center;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 1.8rem;
+    }
+    nav a {
+      color: white;
+      margin: 0 10px;
+      text-decoration: none;
+      font-weight: bold;
+    }
+    nav a.active {
+      text-decoration: underline;
+    }
+    .theme-toggle {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: #fff;
+      color: #000;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    .theme-toggle:hover {
+      transform: scale(1.1);
+    }
+
+    /* === Contenu principal === */
+    main {
+      padding: 20px;
+      max-width: 1200px;
+      margin: auto;
+    }
+
+    h2 {
+      text-align: center;
+      color: var(--header);
+    }
+
+    .actions {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+
+    .actions button, .actions a {
+      background: var(--header);
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 5px;
+      text-decoration: none;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .actions button:hover, .actions a:hover {
+      background: #1a252f;
+    }
+
+    .maisons-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 15px;
+      margin-top: 20px;
+    }
+
+    .maison {
+      background: var(--card);
+      border-radius: 10px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform 0.3s;
+    }
+
+    .maison:hover {
+      transform: scale(1.03);
+    }
+
+    .maison img {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+    }
+
+    .maison h3 {
+      margin: 10px;
+      color: var(--text);
+    }
+
+    .maison p {
+      margin: 0 10px 10px;
+      color: var(--text);
+    }
+
+    /* --- Footer --- */
+footer { background:#f4f4f4; padding:30px; margin-top:40px; text-align:center; border-top:1px solid #ddd; }
+footer a { margin:0 5px; text-decoration:none; color:#1abc9c; }
+body.dark footer { background:#1e1e1e; color:#f5f5f5; border-top:1px solid #555; }
+  </style>
+</head>
+<body>
+
+  <!-- === HEADER === -->
+  <header>
+    <button class="theme-toggle" id="themeToggle">🌙</button>
+    <h1>🏡 Location Maisons</h1>
+    <nav>
+      <a href="Accueil.html">Accueil</a> |
+      <a href="Reservation.html">Réservation</a> |
+      <a href="favoris.html" class="active">Favoris</a> |
+      <a href="connexion.html">Connexion</a>
+    </nav>
+  </header>
+
+  <!-- === MAIN CONTENT === -->
+  <main>
+    <h2>❤️ Mes Favoris</h2>
+
+    <div class="actions">
+      <a href="Accueil.html">← Retour à l'accueil</a>
+      <button id="clearFavoris">🗑️ Supprimer tous les favoris</button>
+    </div>
+
+    <div class="maisons-container" id="favorisContainer"></div>
+  </main>
+
+  <!-- === FOOTER === -->
+  <footer>
+  <div>
+    <h3>Location Maisons</h3>
+    <p>Votre plateforme pour trouver ou publier des maisons à louer facilement.</p>
+  </div>
+  <div>
+    <a href="accueil.html">Accueil</a> | 
+    <a href="Reservation.html">Réservation</a> |
+    <a href="connexion.html">Connexion / Inscription</a> |
+    <a href="Tableau de bord.html">Tableau de bord</a> 
+  </div>
+  <div style="margin-top:10px;">
+    <p>📧 contact@locationmaisons.com | 📞 +229 90 00 00 00</p>
+  </div>
+</footer>
+
+  <!-- === SCRIPT === -->
+  <script>
+    const BASE_URL = "http://localhost:3000/api";
+    const UPLOADS_BASE = BASE_URL.replace(/\/api\/?$/, '') + '/uploads';
+
+    // === Thème sombre ===
+    const themeToggle = document.getElementById("themeToggle");
+    if (localStorage.getItem("theme") === "dark") {
+      document.body.classList.add("dark");
+      themeToggle.textContent = "☀️";
+    }
+    themeToggle.addEventListener("click", () => {
+      document.body.classList.toggle("dark");
+      const dark = document.body.classList.contains("dark");
+      localStorage.setItem("theme", dark ? "dark" : "light");
+      themeToggle.textContent = dark ? "☀️" : "🌙";
+    });
+
+    // === Gestion des favoris ===
+    function buildImageUrl(maison) {
+      if (!maison || !maison.images || maison.images.length === 0) {
+        return 'https://via.placeholder.com/400x250';
+      }
+      const first = maison.images[0];
+      if (/^https?:\/\//i.test(first)) return first;
+      if (first.startsWith('/')) return first;
+      return `${UPLOADS_BASE}/${encodeURIComponent(first)}`;
+    }
+
+    function loadFavoris() {
+      const container = document.getElementById('favorisContainer');
+      const favs = JSON.parse(localStorage.getItem('favoris') || '[]');
+      container.innerHTML = "";
+
+      if (favs.length === 0) {
+        container.innerHTML = "<p style='text-align:center;'>Aucune maison dans vos favoris ❤️</p>";
+        return;
+      }
+
+      favs.forEach(maison => {
+        const div = document.createElement('div');
+        div.classList.add('maison');
+        const imgSrc = buildImageUrl(maison);
+        div.innerHTML = `
+          <img src="${imgSrc}" alt="${maison.titre}">
+          <h3>${maison.titre}</h3>
+          <p>📍 ${maison.localisation}</p>
+          <p>💵 ${maison.prix} FCFA / mois</p>
+        `;
+
+        div.addEventListener("click", () => {
+          localStorage.setItem("maisonSelectionnee", JSON.stringify(maison));
+          window.location.href = "Reservation.html";
+        });
+
+        container.appendChild(div);
+      });
+    }
+
+    document.getElementById("clearFavoris").addEventListener("click", () => {
+      if (confirm("Voulez-vous vraiment supprimer tous vos favoris ?")) {
+        localStorage.removeItem("favoris");
+        loadFavoris();
+      }
+    });
+
+    // Rafraîchissement automatique
+    window.addEventListener("storage", (event) => {
+      if (event.key === "favoris") loadFavoris();
+    });
+    setInterval(loadFavoris, 2000);
+
+    loadFavoris();
+  </script>
+
+</body>
+</html>

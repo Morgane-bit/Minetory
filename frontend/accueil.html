@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🏡 Location Maisons</title>
+  <meta name="description" content="Trouvez facilement une maison à louer.">
+  <meta property="og:title" content="Location Maisons">
+  <meta property="og:description" content="Trouvez votre prochaine maison à louer.">
+  <style>
+    :root { --bg:#f4f4f9; --text:#333; --header:#2c3e50; --card:#fff; }
+    body.dark { --bg:#1e1e1e; --text:#eee; --header:#111; --card:#2a2a2a; }
+    body { font-family: Arial, sans-serif; margin:0; padding:0; background:var(--bg); color:var(--text); transition:background 0.3s,color 0.3s;}
+    header { background:var(--header); color:white; padding:1rem; text-align:center; position:sticky; top:0; z-index:1000; }
+    nav a { color:white; margin:0 10px; text-decoration:none; font-weight:bold; }
+    nav a.active { text-decoration:underline; }
+    h1 { text-align:center; margin:20px 0; }
+    .theme-toggle { position:absolute; top:10px; right:10px; background:#fff; color:#000; border:none; padding:5px 10px; border-radius:20px; cursor:pointer; }
+    .search-section { background:var(--card); padding:20px; text-align:center; margin:20px; border-radius:10px; box-shadow:0 2px 5px rgba(0,0,0,0.1); }
+    .search-section input, .search-section select, .search-section button { padding:10px; margin:5px; border-radius:5px; border:1px solid #ccc; width:200px; }
+    @media(max-width:600px){ .search-section input, .search-section select, .search-section button { width:100%; } }
+    .maisons-container { display: grid; grid-template-columns: repeat(auto-fill,minmax(250px,1fr)); gap:15px; padding:20px; }
+    .maison { background:var(--card); border-radius:10px; overflow:hidden; box-shadow:0 2px 5px rgba(0,0,0,0.1); cursor:pointer; transition:0.3s; padding:10px; position:relative; }
+    .maison:hover { transform:scale(1.02); background:#f5faff; }
+    body.dark .maison:hover { background:#333; }
+    .maison img { width:100%; height:180px; object-fit:cover; border-radius:10px; }
+    .maison h3 { margin:10px 0 5px; font-size:18px; }
+    .maison p { margin:3px 0; color:#555; font-size:14px; }
+    body.dark .maison p { color:#ccc; }
+    .fav-btn { position:absolute; top:10px; right:10px; background:rgba(255,255,255,0.8); border:none; border-radius:50%; width:30px; height:30px; cursor:pointer; font-size:18px; }
+    .loader { text-align:center; padding:20px; font-size:18px; }
+    .error { color:red; text-align:center; padding:10px; }
+    footer { background:#f4f4f4; padding:30px; margin-top:40px; text-align:center; border-top:1px solid #ddd; }
+    body.dark footer { background:#111111; border-color:#444; }
+    footer a { margin:0 5px; text-decoration:none; color:#1abc9c; }
+    #topBtn { display:none; position:fixed; bottom:30px; right:30px; z-index:999; background:#2c3e50; color:#fff; border:none; padding:10px 15px; border-radius:50%; cursor:pointer; }
+  </style>
+</head>
+<body>
+
+<header>
+  <button class="theme-toggle" id="themeToggle">🌙</button>
+  <h1>🏡 Location Maisons</h1>
+  <nav>
+    <a href="favoris.html" > Mes favoris</a> |
+    <a href="Reservation.html">Réservation</a> |
+    <a href="connexion.html">Connexion / Inscription</a> |
+    <a href="Tableau de bord.html">Tableau de bord</a>
+  </nav>
+</header>
+
+<section class="search-section">
+  <h2>🔍 Rechercher une maison</h2>
+  <form id="searchForm" aria-label="Formulaire de recherche">
+    <input type="text" placeholder="Entrez une localisation..." name="localisation" aria-label="localisation">
+    <select name="type" aria-label="type de maison">
+      <option value="">-- Type de maison --</option>
+      <option value="appartement">Appartement</option>
+      <option value="villa">Villa</option>
+      <option value="studio">Studio</option>
+      <option value="chambre">Chambre</option>
+    </select>
+    <input type="number" id="prixMax" placeholder="Prix max (FCFA)" aria-label="Prix maximum">
+    <button type="submit">Rechercher</button>
+  </form>
+</section>
+
+<h1>Nos maisons disponibles</h1>
+<div class="maisons-container" id="maisons-container"></div>
+
+<button id="topBtn" title="Retour en haut">↑</button>
+
+<footer>
+  <div>
+    <h3>Location Maisons</h3>
+    <p>Votre plateforme pour trouver ou publier des maisons à louer facilement.</p>
+  </div>
+  <div>
+    <a href="favoris.html" > Mes favoris</a> |
+    <a href="Reservation.html">Réservation</a> |
+    <a href="connexion.html">Connexion / Inscription</a> |
+    <a href="Tableau de bord.html">Tableau de bord</a>
+  </div>
+  <div style="margin-top:10px;">
+    <p>📧 contact@locationmaisons.com | 📞 +229 90 00 00 00</p>
+  </div>
+  <div style="margin-top:10px;">
+    <a href="#">Facebook</a> •
+    <a href="#">Instagram</a> •
+    <a href="#">LinkedIn</a>
+  </div>
+  <p style="margin-top:15px; font-size:13px; color:#555;">© 2025 Location Maisons - Tous droits réservés</p>
+</footer>
+
+<script>
+const BASE_URL = "http://localhost:3000/api";
+const form = document.getElementById("searchForm");
+const container = document.getElementById("maisons-container");
+const prixMaxInput = document.getElementById("prixMax");
+let allMaisons = [];
+
+/* --- Sécurité texte --- */
+function escapeHTML(str = '') {
+  return String(str).replace(/[&<>'"]/g, c => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;',
+    '"': '&quot;', "'": '&#39;'
+  }[c]));
+}
+
+/* --- Indicateurs visuels --- */
+function showLoader() {
+  container.innerHTML = '<div class="loader">⏳ Chargement des maisons…</div>';
+}
+function showError(message) {
+  container.innerHTML = `<div class="error">${escapeHTML(message)}</div>`;
+}
+
+/* --- Images --- */
+const UPLOADS_BASE = BASE_URL.replace(/\/api\/?$/, '') + '/uploads';
+function buildImageUrl(maison) {
+  if (!maison || !maison.images || maison.images.length === 0) {
+    return 'https://via.placeholder.com/400x250';
+  }
+  const first = maison.images[0];
+  if (/^https?:\/\//i.test(first)) return first;
+  if (first.startsWith('/')) return first;
+  return `${UPLOADS_BASE}/${encodeURIComponent(first)}`;
+}
+
+/* --- Gestion des favoris (on sauvegarde une copie/clône dans localStorage) --- */
+function getFavoris() {
+  return JSON.parse(localStorage.getItem("favoris") || "[]");
+}
+function saveFavoris(favs) {
+  localStorage.setItem("favoris", JSON.stringify(favs));
+}
+function isFavori(id) {
+  return getFavoris().some(f => (f._id === id) || (f.id === id));
+}
+function toggleFavori(maison) {
+  const id = maison._id || maison.id;
+  let favs = getFavoris();
+
+  const idx = favs.findIndex(f => (f._id || f.id) === id);
+  if (idx !== -1) {
+    // retirer
+    favs.splice(idx, 1);
+    alert("Maison retirée des favoris !");
+  } else {
+    // ajouter une COPIE (clone) pour être sûr qu'on enregistre une "doublure"
+    const clone = JSON.parse(JSON.stringify(maison));
+    favs.push(clone);
+    alert("Maison ajoutée aux favoris !");
+  }
+  saveFavoris(favs);
+
+  // mise à jour visuelle : on re-rend la page (les coeurs seront mis à jour)
+  renderMaisons(allMaisons);
+}
+
+/* --- Affichage des maisons (⚠ on n'enlève PAS les maisons mises en favoris) --- */
+function renderMaisons(maisons) {
+  container.innerHTML = "";
+  if (!Array.isArray(maisons) || maisons.length === 0) {
+    container.innerHTML = "<p>Aucune maison trouvée.</p>";
+    return;
+  }
+
+  maisons.forEach(maison => {
+    const maisonDiv = document.createElement("div");
+    maisonDiv.classList.add("maison");
+
+    const id = maison._id || maison.id || "";
+    const imgSrc = buildImageUrl(maison);
+    const favSymbol = isFavori(id) ? "💔" : "❤️";
+
+    maisonDiv.innerHTML = `
+      <button class="fav-btn" data-id="${id}" aria-label="favoris">${favSymbol}</button>
+      <img loading="lazy" src="${imgSrc}" alt="${escapeHTML(maison.titre || "Maison")}">
+      <h3>${escapeHTML(maison.titre || "Sans titre")}</h3>
+      <p><strong>📍 Localisation:</strong> ${escapeHTML(maison.localisation || "Inconnue")}</p>
+      <p><strong>💵 Prix:</strong> ${maison.prix ? escapeHTML(maison.prix + " FCFA / mois") : "N/A"}</p>
+    `;
+
+    // Bouton favoris : ajoute/retire la copie dans localStorage, sans retirer la maison de l'affichage
+    const favBtn = maisonDiv.querySelector(".fav-btn");
+    favBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      toggleFavori(maison);
+      // Mettre à jour immédiatement l'icône (toggleFavori ré-exécute renderMaisons,
+      // mais au cas où on veut update l'icône directement)
+      // favBtn.textContent = isFavori(id) ? '💔' : '❤️';
+    });
+
+    // Clic sur la carte -> enregistre la maison sélectionnée et redirige vers Reservation
+    maisonDiv.addEventListener("click", () => {
+      localStorage.setItem("maisonSelectionnee", JSON.stringify(maison));
+      window.location.href = `Reservation.html?id=${encodeURIComponent(id)}`;
+    });
+
+    container.appendChild(maisonDiv);
+  });
+}
+
+/* --- Chargement des maisons --- */
+async function fetchMaisons(query = "") {
+  try {
+    showLoader();
+    const res = await fetch(`${BASE_URL}/maisons${query}`);
+    if (!res.ok) throw new Error("Statut " + res.status);
+    const maisons = await res.json();
+    allMaisons = maisons || [];
+    renderMaisons(allMaisons);
+  } catch (err) {
+    console.error("Erreur:", err);
+    showError("Impossible de charger les maisons.");
+  }
+}
+
+/* --- Filtres (recherche / prix) --- */
+form.addEventListener("submit", e => {
+  e.preventDefault();
+  const localisation = form.localisation.value.trim();
+  const type = form.type.value;
+  const params = new URLSearchParams();
+  if (localisation) params.append("localisation", localisation);
+  if (type) params.append("type", type);
+  fetchMaisons(params.toString() ? "?" + params.toString() : "");
+});
+
+prixMaxInput.addEventListener("input", () => {
+  const max = parseInt(prixMaxInput.value, 10);
+  const filtered = allMaisons.filter(m => !max || (m.prix && m.prix <= max));
+  renderMaisons(filtered);
+});
+
+/* --- Thème clair/sombre --- */
+const themeToggle = document.getElementById("themeToggle");
+if (localStorage.getItem("theme") === "dark") {
+  document.body.classList.add("dark");
+  if (themeToggle) themeToggle.textContent = "☀️";
+}
+if (themeToggle) {
+  themeToggle.addEventListener("click", () => {
+    document.body.classList.toggle("dark");
+    const dark = document.body.classList.contains("dark");
+    localStorage.setItem("theme", dark ? "dark" : "light");
+    themeToggle.textContent = dark ? "☀️" : "🌙";
+  });
+}
+
+/* --- Bouton retour haut --- */
+const topBtn = document.getElementById("topBtn");
+if (topBtn) {
+  window.addEventListener("scroll", () => {
+    topBtn.style.display = window.scrollY > 200 ? "block" : "none";
+  });
+  topBtn.addEventListener("click", () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  });
+}
+
+/* --- Actualisation au retour depuis Favoris (optionnel) --- */
+window.addEventListener("focus", () => {
+  if (localStorage.getItem("refreshAccueil") === "1") {
+    fetchMaisons();
+    localStorage.removeItem("refreshAccueil");
+  }
+});
+
+/* --- Démarrage --- */
+fetchMaisons();
+</script>
+</body>
+</html>

@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Tableau de Bord - Propriétaire</title>
+<style>
+/* --- Style général --- */
+body { 
+  font-family: Arial, sans-serif; 
+  margin:0; 
+  background:#f4f4f9; 
+  color:#333;
+  transition: all 0.3s ease;
+}
+header { 
+  background:#2c3e50; 
+  color:white; 
+  padding:1rem; 
+  text-align:center; 
+  position: sticky;
+  top:0;
+  z-index:1000;
+}
+nav a, nav button { 
+  color:white; 
+  margin:0 10px; 
+  text-decoration:none; 
+  font-weight:bold; 
+  cursor:pointer; 
+  padding:5px 10px;
+  border-radius:5px;
+  transition: background 0.3s;
+}
+nav a:hover, nav button:hover { background: rgba(255,255,255,0.2); }
+nav a.active { 
+  text-decoration:underline; 
+}
+.container { 
+  max-width:1200px; 
+  margin:20px auto; 
+  padding:0 15px; 
+  display:flex; 
+  flex-wrap:wrap; 
+  gap:20px; 
+}
+.section { 
+  background:white; 
+  padding:20px; 
+  border-radius:10px; 
+  box-shadow:0 2px 8px rgba(0,0,0,0.1); 
+  flex:1 1 100%; 
+  min-width:300px; 
+  display:none; 
+  transition: all 0.3s ease;
+}
+h2 { 
+  margin-top:0; 
+  text-align:center; 
+  color:#2c3e50;
+}
+table { 
+  width:100%; 
+  border-collapse: collapse; 
+  margin-top:10px; 
+  transition: all 0.3s ease;
+  background:white;
+}
+th, td { 
+  padding:12px; 
+  text-align:left; 
+  border-bottom:1px solid #ddd; 
+}
+th { 
+  background:#f0f0f0; 
+}
+tr:nth-child(even) { background:#fafafa; }
+input, select, textarea, button { 
+  width:100%; 
+  padding:10px; 
+  margin:5px 0; 
+  border-radius:5px; 
+  border:1px solid #ccc; 
+  transition: all 0.3s ease;
+  box-sizing:border-box;
+}
+input:focus, select:focus, textarea:focus { border-color:#2c3e50; outline:none; }
+button { 
+  background:#2c3e50; 
+  color:white; 
+  border:none; 
+  cursor:pointer; 
+  font-weight:bold;
+}
+button:hover { background:#1a2a38; }
+.notification { 
+  background:#e74c3c; 
+  color:white; 
+  padding:3px 8px; 
+  border-radius:20px; 
+  font-size:12px; 
+  vertical-align:super;
+}
+footer { 
+  background:#f4f4f4; 
+  padding:30px; 
+  margin-top:40px; 
+  text-align:center; 
+  border-top:1px solid #ddd; 
+  transition: all 0.3s ease;
+}
+footer a { 
+  margin:0 5px; 
+  text-decoration:none; 
+  color:#2c3e50; 
+}
+footer a:hover { text-decoration:underline; }
+
+/* --- Sections et cartes --- */
+.stat-card { 
+  background:#fff; 
+  padding:15px; 
+  margin:10px 0; 
+  border-radius:8px; 
+  box-shadow:0 2px 6px rgba(0,0,0,0.1); 
+  text-align:center; 
+  flex:1; 
+  transition: all 0.3s ease;
+}
+.reply-input { 
+  width:100%; 
+  padding:5px; 
+  margin-top:5px; 
+  border-radius:5px;
+  border:1px solid #ccc;
+}
+.btn-reply, .btn-whatsapp, .btn-delete { 
+  padding:5px 10px; 
+  margin-top:5px; 
+  border-radius:5px; 
+  color:white; 
+  border:none; 
+  cursor:pointer; 
+  font-size:12px;
+}
+.btn-reply { background:#2c3e50; }
+.btn-whatsapp { background:#25D366; margin-left:5px; }
+.btn-delete { background:#e74c3c; margin-left:5px; }
+.loader { text-align:center; padding:10px; color:#555; }
+.error { color:red; }
+
+.carousel { display:flex; overflow-x:auto; gap:10px; margin-top:10px; margin-bottom:15px; }
+.media-wrapper { position:relative; display:inline-block; margin:5px; }
+.media-wrapper img, .media-wrapper video { border-radius:8px; max-height:150px; display:block; }
+.media-remove-btn {
+  position:absolute; top:5px; right:5px; background:rgba(231,76,60,0.8); border:none; color:white;
+  border-radius:50%; cursor:pointer; width:24px; height:24px;
+}
+
+@media(max-width:768px){ .container { flex-direction:column; } }
+
+/* --- Dark Mode Global --- */
+.dark-mode {
+  background-color:#121212 !important;
+  color:#f5f5f5 !important;
+}
+.dark-mode header,
+.dark-mode nav,
+.dark-mode .section,
+.dark-mode .stat-card,
+.dark-mode footer {
+  background-color:#1e1e1e !important;
+  color:#f5f5f5 !important;
+  border-color:#333 !important;
+}
+.dark-mode table,
+.dark-mode th,
+.dark-mode td {
+  background-color:#1e1e1e !important;
+  color:#f5f5f5 !important;
+  border-color:#555 !important;
+}
+.dark-mode input,
+.dark-mode select,
+.dark-mode textarea,
+.dark-mode button {
+  background-color:#333 !important;
+  color:#f5f5f5 !important;
+  border-color:#555 !important;
+}
+.dark-mode a { color:#1e90ff !important; }
+
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🏡 Tableau de Bord - Propriétaire</h1>
+  <nav>
+    <a onclick="showSection('profil')">Profil</a>
+    <a onclick="showSection('ajouter')">Ajouter Maison</a>
+    <a onclick="showSection('maisons')">Mes Maisons</a>
+    <a onclick="showSection('demandes')">Messages <span class="notification" id="notifCount">0</span></a>
+    <a onclick="showSection('stats')">Statistiques</a>
+    <a href="#" onclick="logout()">Déconnexion</a>
+    <button onclick="toggleDarkMode()">🌓 Mode sombre</button>
+  </nav>
+</header>
+
+<div class="container">
+  <!-- Profil -->
+  <div class="section" id="profil">
+    <h2>Profil</h2>
+    <form id="formProfil">
+      <input type="text" placeholder="Nom complet" id="nom">
+      <input type="email" placeholder="Email" id="email">
+      <input type="tel" placeholder="Téléphone" id="telephone">
+      <input type="password" placeholder="Mot de passe (laisser vide pour ne pas changer)" id="password">
+      <button type="submit">Modifier profil</button>
+      <button type="button" style="background:#e74c3c;margin-top:10px;" onclick="supprimerCompte()">Supprimer mon compte</button>
+    </form>
+  </div>
+
+  <!-- Ajouter / Modifier Maison -->
+  <div class="section" id="ajouter">
+    <h2 id="titreFormMaison">Ajouter une maison</h2>
+    <form id="formAjouterMaison" enctype="multipart/form-data">
+      <input type="text" placeholder="Titre de la maison" required>
+      <input type="text" placeholder="Localisation" required>
+      <select required>
+        <option value="">-- Type de maison --</option>
+        <option value="studio">Studio</option>
+        <option value="appartement">Appartement</option>
+        <option value="villa">Villa</option>
+        <option value="duplex">Duplex</option>
+        <option value="chambre">Chambre</option>
+      </select>
+      <input type="number" placeholder="Prix / mois" required>
+      <textarea placeholder="Description"></textarea>
+
+      <!-- Champ upload images/videos -->
+      <label for="mediaUpload">Ajouter images/vidéos :</label>
+      <input type="file" id="mediaUpload" multiple accept="image/*,video/*">
+      <div id="previewMedia" class="carousel" aria-live="polite"></div>
+
+      <button type="submit">Ajouter maison</button>
+    </form>
+  </div>
+
+  <!-- Mes Maisons -->
+  <div class="section" id="maisons">
+    <h2>Mes maisons</h2>
+    <input type="text" placeholder="Rechercher..." id="searchMaisons" oninput="filtrerMaisons()">
+    <table>
+      <thead>
+        <tr>
+          <th>Titre</th><th>Localisation</th><th>Type</th><th>Prix</th><th>Description</th><th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="maisonsBody"></tbody>
+    </table>
+  </div>
+
+  <!-- Messages / Demandes -->
+  <div class="section" id="demandes">
+    <h2>Messages reçus</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Maison</th><th>Nom client</th><th>Email</th><th>Téléphone</th><th>Message</th><th>Réponse</th><th>Statut</th>
+        </tr>
+      </thead>
+      <tbody id="demandesBody"></tbody>
+    </table>
+  </div>
+
+  <!-- Statistiques -->
+  <div class="section" id="stats">
+    <div class="stat-card">
+      <p>Maisons publiées</p>
+      <h3 id="nbMaisons">0</h3>
+    </div>
+    <div class="stat-card">       
+      <p>Messages reçus</p>
+      <h3 id="nbMessages">0</h3>
+    </div>
+    <h2>📍 Maisons par Localisation</h2>
+    <ul id="statsLocalisation"></ul>
+    <h2>🏠 Maisons par Type</h2>
+    <ul id="statsType"></ul>
+    <h2>📊 Graphiques</h2>
+    <canvas id="graphMaisons" width="400" height="200"></canvas>
+  </div>
+
+</div>
+
+<footer>
+  <div>
+    <h3>Location Maisons</h3>
+    <p>Votre plateforme pour trouver ou publier des maisons à louer facilement.</p>
+  </div>
+  <div>
+    <a href="accueil.html">Accueil</a> |
+    <a href="favoris.html" > Mes favoris</a> |
+    <a href="Reservation.html">Reservation</a> |
+    <a href="connexion.html">Connexion / Inscription</a>
+  </div>
+  <div style="margin-top:10px;">
+    <p>📧 contact@locationmaisons.com | 📞 +229 90 00 00 00</p>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+/*
+  FRONTEND COMPLET — toutes les sections inchangées sauf la partie ajout/modif maison qui a été améliorée.
+  Assure-toi que BASE_URL correspond à ton API (ici: http://localhost:3000/api).
+*/
+
+const BASE_URL = 'http://localhost:3000/api';
+
+/* -----------------------------
+   Variables globales (une seule déclaration)
+   ----------------------------- */
+let currentMaisonId = null;
+
+// uploadedFiles = tableau d'objets { id: string, file: File }
+// id permet de supprimer le bon élément même si l'ordre change
+let uploadedFiles = [];
+
+/* --- Dark Mode --- */
+function toggleDarkMode(){
+  document.body.classList.toggle('dark-mode');
+  localStorage.setItem('darkMode', document.body.classList.contains('dark-mode') ? 'on' : 'off');
+}
+if(localStorage.getItem('darkMode')==='on'){ document.body.classList.add('dark-mode'); }
+
+function authHeader() {
+  const t = localStorage.getItem('token');
+  if(!t){ alert("Vous devez vous connecter."); window.location.href = "connexion.html"; }
+  return { 'Authorization': 'Bearer ' + t };
+}
+
+/* --- Gestion sections --- */
+function showSection(id){
+  document.querySelectorAll('.section').forEach(s=>s.style.display='none');
+  const el = document.getElementById(id);
+  if(el) el.style.display='block';
+}
+
+/* --- Déconnexion --- */
+function logout(){ localStorage.removeItem('token'); window.location.href="connexion.html"; }
+
+/* --- Supprimer compte --- */
+async function supprimerCompte(){
+  if(!confirm("Voulez-vous vraiment supprimer votre compte ?")) return;
+  try{
+    const res = await fetch(`${BASE_URL}/proprietaire/delete`, { method:'DELETE', headers: authHeader() });
+    const result = await res.json().catch(()=>({}));
+    if(!res.ok){ alert(result.error||'Erreur'); return; }
+    alert(result.message || "Compte supprimé !");
+    logout();
+  }catch(err){ console.error(err); alert("Erreur réseau"); }
+}
+
+/* --- Profil --- */
+const formProfil = document.getElementById('formProfil');
+async function loadProfil(){
+  try {
+    const res = await fetch(`${BASE_URL}/proprietaire/me`, { headers: authHeader() });
+    const data = await res.json();
+    document.getElementById('nom').value = data.nom || '';
+    document.getElementById('email').value = data.email || '';
+    document.getElementById('telephone').value = data.telephone || '';
+  } catch(err) {
+    console.error(err);
+  }
+}
+formProfil.addEventListener('submit', async e=>{
+  e.preventDefault();
+  const nom = document.getElementById('nom').value;
+  const email = document.getElementById('email').value;
+  const telephone = document.getElementById('telephone').value;
+  const password = document.getElementById('password').value;
+  const res = await fetch(`${BASE_URL}/proprietaire/update`, {
+    method:'PUT', headers:{...authHeader(),'Content-Type':'application/json'},
+    body:JSON.stringify({nom,email,telephone,password})
+  });
+  const result = await res.json();
+  alert(result.message || result.error);
+});
+
+/* --- Mes Maisons --- */
+async function loadMaisons(){
+  try {
+    const res = await fetch(`${BASE_URL}/maisons/mes-maisons`, { headers: authHeader() });
+    const maisons = await res.json();
+    const tbody = document.getElementById('maisonsBody');
+    tbody.innerHTML='';
+    maisons.forEach(m=>{
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${m.titre}</td><td>${m.localisation}</td><td>${m.type}</td><td>${m.prix}</td><td>${m.description}</td>
+        <td>
+          <button onclick="modifierMaison('${m._id}')">Modifier</button>
+          <button onclick="supprimerMaison('${m._id}', this)">Supprimer</button>
+        </td>`;
+      tbody.appendChild(tr);
+    });
+    loadStats(); // mise à jour stats dynamique
+  } catch(err) {
+    console.error(err);
+  }
+}
+
+async function supprimerMaison(id, btn){
+  if(!confirm("Supprimer cette maison ?")) return;
+  try {
+    const res = await fetch(`${BASE_URL}/maisons/${id}`, { method:'DELETE', headers: authHeader() });
+    const result = await res.json();
+    if(result.success){
+      btn.closest('tr').remove();
+      alert(result.message);
+      loadStats();
+    } else alert(result.error||'Erreur');
+  } catch(err) {
+    console.error(err);
+    alert('Erreur réseau');
+  }
+}
+
+/* -----------------------------
+   --- Ajouter / Modifier Maison (corrigé) ---
+   ----------------------------- */
+const formAjouterMaison = document.getElementById('formAjouterMaison');
+const titreFormMaison = document.getElementById('titreFormMaison');
+const mediaInput = document.getElementById('mediaUpload');
+const previewMedia = document.getElementById('previewMedia');
+
+/* helper: crée un uid simple */
+function uid() { return Math.random().toString(36).slice(2,10); }
+
+/* Réinitialise l'input file pour refléter uploadedFiles */
+function updateFileInputFromUploadedFiles() {
+  const dt = new DataTransfer();
+  uploadedFiles.forEach(obj => dt.items.add(obj.file));
+  mediaInput.files = dt.files;
+}
+
+/* Afficher aperçu à partir de uploadedFiles */
+function renderPreviewMedia() {
+  previewMedia.innerHTML = '';
+  uploadedFiles.forEach(obj => {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'media-wrapper';
+    wrapper.dataset.uid = obj.id;
+
+    if(obj.file.type.startsWith('image/')) {
+      const img = document.createElement('img');
+      img.src = URL.createObjectURL(obj.file);
+      img.alt = obj.file.name;
+      wrapper.appendChild(img);
+    } else if(obj.file.type.startsWith('video/')) {
+      const v = document.createElement('video');
+      v.src = URL.createObjectURL(obj.file);
+      v.controls = true;
+      v.width = 200;
+      wrapper.appendChild(v);
+    } else {
+      const span = document.createElement('span');
+      span.textContent = obj.file.name;
+      wrapper.appendChild(span);
+    }
+
+    const btnRemove = document.createElement('button');
+    btnRemove.className = 'media-remove-btn';
+    btnRemove.type = 'button';
+    btnRemove.innerText = '❌';
+    btnRemove.title = 'Supprimer ce fichier';
+    btnRemove.addEventListener('click', () => {
+      // supprime le fichier correspondant à obj.id
+      uploadedFiles = uploadedFiles.filter(x => x.id !== obj.id);
+      updateFileInputFromUploadedFiles();
+      renderPreviewMedia();
+    });
+
+    wrapper.appendChild(btnRemove);
+    previewMedia.appendChild(wrapper);
+  });
+}
+
+/* Quand l'utilisateur change la sélection de fichiers */
+mediaInput.addEventListener('change', (ev) => {
+  // Remplacer la sélection actuelle par la nouvelle (comme avant)
+  const files = Array.from(mediaInput.files || []);
+  uploadedFiles = files.map(f => ({ id: uid(), file: f }));
+  renderPreviewMedia();
+});
+
+/* Handler d'envoi (POST / PUT) */
+async function ajouterMaisonHandler(e) {
+  e.preventDefault();
+
+  const titre = formAjouterMaison.querySelector('input[placeholder="Titre de la maison"]').value.trim();
+  const localisation = formAjouterMaison.querySelector('input[placeholder="Localisation"]').value.trim();
+  const type = formAjouterMaison.querySelector('select').value;
+  const prix = formAjouterMaison.querySelector('input[placeholder="Prix / mois"]').value.trim();
+  const description = formAjouterMaison.querySelector('textarea').value.trim();
+
+  if (!titre || !localisation || !type || !prix) {
+    alert("Veuillez remplir tous les champs obligatoires !");
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append('titre', titre);
+  formData.append('localisation', localisation);
+  formData.append('type', type);
+  formData.append('prix', prix);
+  formData.append('description', description);
+
+  // ajouter fichiers (si présents)
+  uploadedFiles.forEach(obj => formData.append('media', obj.file));
+
+  const url = currentMaisonId ? `${BASE_URL}/maisons/${currentMaisonId}` : `${BASE_URL}/maisons`;
+  const method = currentMaisonId ? 'PUT' : 'POST';
+
+  try {
+    const res = await fetch(url, {
+      method,
+      headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') },
+      body: formData
+    });
+
+    const result = await res.json();
+    if (!res.ok) throw new Error(result.error || 'Erreur serveur');
+
+    alert(result.message || (currentMaisonId ? 'Maison modifiée !' : 'Maison ajoutée !'));
+
+    // reset local state
+    formAjouterMaison.reset();
+    uploadedFiles = [];
+    renderPreviewMedia();
+    currentMaisonId = null;
+    titreFormMaison.innerText = 'Ajouter une maison';
+    loadMaisons();
+    showSection('maisons');
+  } catch(err) {
+    console.error(err);
+    alert('Erreur: ' + err.message);
+  }
+}
+formAjouterMaison.addEventListener('submit', ajouterMaisonHandler);
+
+/* Charger les données d'une maison pour modification */
+function modifierMaison(id) {
+  currentMaisonId = id;
+  titreFormMaison.innerText = 'Modifier la maison';
+  fetch(`${BASE_URL}/maisons/${id}`, { headers: authHeader() })
+    .then(r => r.json())
+    .then(m => {
+      formAjouterMaison.querySelector('input[placeholder="Titre de la maison"]').value = m.titre || '';
+      formAjouterMaison.querySelector('input[placeholder="Localisation"]').value = m.localisation || '';
+      formAjouterMaison.querySelector('select').value = m.type || '';
+      formAjouterMaison.querySelector('input[placeholder="Prix / mois"]').value = m.prix || '';
+      formAjouterMaison.querySelector('textarea').value = m.description || '';
+
+      // si le backend renvoie un tableau m.media (urls ou ids), affiche-les en aperçu
+      // on ne peut pas envoyer ces "médias existants" tels quels au backend via FormData;
+      // il faudrait soit conserver les URLs, soit gérer leur suppression séparément (TODO backend).
+      if (Array.isArray(m.media) && m.media.length) {
+        // On crée une représentation d'aperçu pour médias déjà existants (non-modifiables en local sans backend).
+        // Pour l'instant on affiche simplement des aperçus web (URLs) et marque comme "existant".
+        // Si tu veux permettre suppression / conservation, il faut que le backend accepte un champ removeMedia[].
+        previewMedia.innerHTML = '';
+        m.media.forEach((mediaItem, idx) => {
+          const wrapper = document.createElement('div');
+          wrapper.className = 'media-wrapper';
+          // mediaItem peut être une URL ou un objet { url, _id }
+          const url = typeof mediaItem === 'string' ? mediaItem : (mediaItem.url || mediaItem.path || '');
+          if (url.match(/\.(jpg|jpeg|png|gif|webp)$/i)) {
+            const img = document.createElement('img'); img.src = url; wrapper.appendChild(img);
+          } else {
+            // vidéo ou autre
+            const v = document.createElement('video'); v.src = url; v.controls = true; v.width = 200; wrapper.appendChild(v);
+          }
+          // note visuelle : médias existants ne sont pas supprimables en frontend sans backend support
+          const badge = document.createElement('div'); badge.style.fontSize='12px'; badge.style.textAlign='center';
+          badge.style.marginTop='4px'; badge.textContent = 'Média existant';
+          wrapper.appendChild(badge);
+          previewMedia.appendChild(wrapper);
+        });
+        // Clear uploadedFiles (we're only displaying existing server media). New files selected will replace this view.
+        uploadedFiles = [];
+        mediaInput.value = '';
+      } else {
+        previewMedia.innerHTML = '';
+      }
+      showSection('ajouter');
+    })
+    .catch(err => {
+      console.error(err);
+      alert("Erreur lors du chargement de la maison");
+    });
+}
+
+/* -----------------------------
+  --- Messages / Demandes (délégation d'événements pour éviter doublons) ---
+   ----------------------------- */
+async function loadDemandes() {
+  try {
+    const res = await fetch(`${BASE_URL}/messages`, { headers: authHeader() });
+    const demandes = await res.json();
+    const tbody = document.getElementById('demandesBody');
+    tbody.innerHTML = '';
+
+    demandes.forEach(d => {
+      const tr = document.createElement('tr');
+      // On s'assure d'utiliser les propriétés que tu as indiquées (nomClient, reponseProprietaire, statut...)
+      tr.innerHTML = `
+        <td>${d.maison || ''}</td>
+        <td>${d.nomClient || d.nom || ''}</td>
+        <td>${d.email || ''}</td>
+        <td>${d.telephone || ''}</td>
+        <td>${d.message || ''}</td>
+        <td>
+          <input type="text" class="reply-input" value="${d.reponseProprietaire || ''}" data-id="${d._id}">
+          <div style="margin-top:6px;">
+            <button class="btn-whatsapp" data-tel="${d.telephone || ''}" data-id="${d._id}" type="button">Envoyer sur WhatsApp</button>
+            <button class="btn-delete" data-id="${d._id}" type="button" style="background:#e74c3c;margin-left:5px;">🗑 Supprimer</button>
+          </div>
+        </td>
+        <td class="statut">${d.statut === 'traité' ? '✅ Traité' : 'En attente'}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    // compteur notifications
+    document.getElementById('notifCount').innerText = demandes.filter(d => d.statut !== 'traité').length;
+  } catch(err) {
+    console.error(err);
+  }
+}
+
+/* Délégation d'événements pour demandes (évite attacher plusieurs listeners quand loadDemandes est appelé plusieurs fois) */
+document.getElementById('demandesBody').addEventListener('click', async (e) => {
+  const btn = e.target.closest('button');
+  if (!btn) return;
+
+  // Envoyer sur WhatsApp
+  if (btn.classList.contains('btn-whatsapp')) {
+    const row = btn.closest('tr');
+    const input = row.querySelector('.reply-input');
+    const reponse = input ? input.value.trim() : '';
+    const telRaw = btn.dataset.tel || '';
+    const tel = telRaw.replace(/[^0-9]/g, '');
+    const messageId = btn.dataset.id || input?.dataset.id;
+
+    if (!tel || !reponse) return alert('Numéro ou message vide !');
+
+    try {
+      // Enregistrer la réponse côté API
+      if (messageId) {
+        const res = await fetch(`${BASE_URL}/messages/${messageId}/reponse`, {
+          method: 'PUT',
+          headers: { ...authHeader(), 'Content-Type': 'application/json' },
+          body: JSON.stringify({ reponse })
+        });
+        const result = await res.json();
+        if (!res.ok) throw new Error(result.error || 'Erreur en enregistrant la réponse');
+      }
+
+      // Indiquer traité
+      row.querySelector('.statut').textContent = '✅ Traité';
+
+      // Tentative d'ouverture : whatsapp:// (mobile) puis fallback web
+      const appUrl = `whatsapp://send?phone=${tel}&text=${encodeURIComponent(reponse)}`;
+      const webUrl = `https://api.whatsapp.com/send?phone=${tel}&text=${encodeURIComponent(reponse)}`;
+
+      // Essayer d'ouvrir l'app natif puis fallback
+      try {
+        // Sur mobile, le navigateur va essayer d'ouvrir whatsapp://
+        window.location.href = appUrl;
+        // Ouvrir aussi la version web dans un nouvel onglet (fallback) après un court délai
+        setTimeout(() => window.open(webUrl, '_blank'), 700);
+      } catch (errOpen) {
+        // Si échec, ouvre web directement
+        window.open(webUrl, '_blank');
+      }
+    } catch(err) {
+      console.error(err);
+      alert('Erreur : ' + (err.message || err));
+    }
+    return;
+  }
+
+  // Supprimer message
+  if (btn.classList.contains('btn-delete')) {
+    if (!confirm('Voulez-vous vraiment supprimer ce message ?')) return;
+    const id = btn.dataset.id;
+    try {
+      const res = await fetch(`${BASE_URL}/messages/${id}`, { method: 'DELETE', headers: authHeader() });
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.error || 'Erreur suppression');
+      btn.closest('tr').remove();
+      await loadStats();
+      alert('Message supprimé !');
+    } catch(err) {
+      console.error(err);
+      alert('Erreur : ' + (err.message || err));
+    }
+    return;
+  }
+});
+
+/* --- Statistiques --- */
+async function loadStats(){
+  try {
+    const res = await fetch(`${BASE_URL}/maisons/mes-maisons`, { headers: authHeader() });
+    const maisons = await res.json();
+    document.getElementById('nbMaisons').innerText = maisons.length || 0;
+
+    const res2 = await fetch(`${BASE_URL}/messages`, { headers: authHeader() });
+    const messages = await res2.json();
+    document.getElementById('nbMessages').innerText = messages.length || 0;
+
+    // Par localisation
+    const locCount = {};
+    maisons.forEach(m=>locCount[m.localisation]=(locCount[m.localisation]||0)+1);
+    const ulLoc = document.getElementById('statsLocalisation'); ulLoc.innerHTML='';
+    Object.keys(locCount).forEach(l=>{ const li=document.createElement('li'); li.innerText=`${l}: ${locCount[l]}`; ulLoc.appendChild(li); });
+
+    // Par type
+    const typeCount={};
+    maisons.forEach(m=>typeCount[m.type]=(typeCount[m.type]||0)+1);
+    const ulType=document.getElementById('statsType'); ulType.innerHTML='';
+    Object.keys(typeCount).forEach(t=>{ const li=document.createElement('li'); li.innerText=`${t}: ${typeCount[t]}`; ulType.appendChild(li); });
+
+    // Graphique simple
+    const ctx = document.getElementById('graphMaisons').getContext('2d');
+    if(window.graphChart) window.graphChart.destroy();
+    window.graphChart = new Chart(ctx, {
+      type:'bar',
+      data: {
+        labels: Object.keys(typeCount),
+        datasets:[{ label:'Maisons par type', data:Object.values(typeCount), backgroundColor:'#2c3e50' }]
+      },
+      options:{ responsive:true }
+    });
+  } catch(err) {
+    console.error(err);
+  }
+}
+
+/* --- Recherche maisons --- */
+function filtrerMaisons(){
+  const filter = document.getElementById('searchMaisons').value.toLowerCase();
+  document.querySelectorAll('#maisonsBody tr').forEach(tr=>{
+    const text = tr.innerText.toLowerCase();
+    tr.style.display = text.includes(filter) ? '' : 'none';
+  });
+}
+
+/* --- Initialisation --- */
+showSection('profil');
+loadProfil();
+loadMaisons();
+loadDemandes();
+</script>
+</body>
+</html>
